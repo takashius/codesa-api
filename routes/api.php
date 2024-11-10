@@ -6,6 +6,8 @@ use App\Http\Controllers\api\PersonaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Middleware\AuthenticateJWT;
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -13,7 +15,7 @@ Route::get('/user', function (Request $request) {
 Route::group(['prefix' => 'auth'], function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::group(['middleware' => 'api'], function () {
+    Route::middleware(AuthenticateJWT::class)->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::post('me', [AuthController::class, 'me']);
@@ -21,7 +23,9 @@ Route::group(['prefix' => 'auth'], function () {
     });
     Route::get('verify-email', [AuthController::class, 'verifyEmail']);
 });
-Route::middleware(['auth.jwt'])->group(function () {
+
+
+Route::middleware(AuthenticateJWT::class)->group(function () {
     Route::group(['prefix' => 'cards'], function () {
         Route::post('/recharge', [CardController::class, 'store']);
         Route::post('/recharges', [CardController::class, 'getData']);

@@ -17,9 +17,8 @@ class CardController extends Controller
         $endDate = $request->input('end_date');
         $formattedStartDate = $startDate ? $startDate . ' 00:00:00' : null;
         $formattedEndDate = $endDate ? $endDate . ' 23:59:59' : null;
-        $userId = Auth::id();
-        $userProfile = UserProfile::where('id', $userId)->first();
-        return response()->json(['message' => $userProfile], 409);
+        $user = Auth::user();
+        $userProfile = UserProfile::where('user_id', $user->id)->first();
 
         $query = DB::connection('codesa')->table('tarjetasrec as t')
             ->leftJoin('personas as p', 't.IDPERSONA', '=', 'p.ID')
@@ -67,7 +66,7 @@ class CardController extends Controller
             $query->where('t.FHRECARGA', '<=', $formattedEndDate);
         }
 
-        $query->where('t.IDPERSONA', '=', $$userProfile->personId);
+        $query->where('t.IDPERSONA', '=', $userProfile->person_id);
 
         $results = $query->get();
 
