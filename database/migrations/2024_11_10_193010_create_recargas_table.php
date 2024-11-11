@@ -19,7 +19,6 @@ class CreateRecargasTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->double('importe');
             $table->timestamp('fecha');
-            $table->foreign('tarjeta_id')->references('ID')->on('tarjetasbono');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
         });
