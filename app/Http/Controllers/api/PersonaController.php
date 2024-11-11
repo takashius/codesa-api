@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmail;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\Persona;
 use App\Models\User;
 use App\Models\UserProfile;
@@ -19,6 +20,7 @@ class PersonaController extends Controller
         $docnum = $request->input('docnum');
         $email = $request->input('email');
         $password = $request->input('password');
+        $credentials = $request->only('email', 'password');
 
         $persona = Persona::where('DOCNUM', $docnum)
             ->where('EMAIL', $email)
@@ -81,8 +83,12 @@ class PersonaController extends Controller
             'token' => $verificationCode,
         ]);
 
+        $token = JWTAuth::attempt($credentials);
+        $personaArray = $persona->toArray();
+        $personaArray['token'] = $token;
+
         Mail::to($user->email)->send(new VerifyEmail($user, $verificationCode));
 
-        return response()->json($persona);
+        return response()->json($personaArray);
     }
 }
