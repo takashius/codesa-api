@@ -5,27 +5,26 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\User;
 
 class VerifyEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $user;
-    public $verificationToken;
+    public $verificationCode;
 
-    public function __construct(User $user, $verificationToken)
+    public function __construct($user, $verificationCode)
     {
         $this->user = $user;
-        $this->verificationToken = $verificationToken;
+        $this->verificationCode = $verificationCode;
     }
 
     public function build()
     {
         return $this->view('emails.verify')
-            ->subject('Verify Email Address')
             ->with([
-                'verificationUrl' => url('/api/auth/verify-email?token=' . $this->verificationToken),
+                'verificationCode' => $this->verificationCode,
+                'user' => $this->user,
             ]);
     }
 }

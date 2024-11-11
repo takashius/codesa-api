@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\VerifyEmail;
 use App\Models\Persona;
 use App\Models\User;
 use App\Models\UserProfile;
+use App\Models\EmailVerification;
 
 class PersonaController extends Controller
 {
@@ -72,7 +74,14 @@ class PersonaController extends Controller
             'kms' => $persona->KMS,
         ]);
 
-        $user->sendEmailVerificationNotification();
+        $verificationCode = rand(100000, 999999);
+
+        EmailVerification::create([
+            'user_id' => $user->id,
+            'token' => $verificationCode,
+        ]);
+
+        Mail::to($user->email)->send(new VerifyEmail($user, $verificationCode));
 
         return response()->json($persona);
     }

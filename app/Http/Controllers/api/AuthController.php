@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Models\EmailVerification;
 use App\Mail\VerifyEmail;
-use Illuminate\Support\Str;
-use Illuminate\Auth\Events\Verified;
 
 class AuthController extends Controller
 {
@@ -109,36 +107,43 @@ class AuthController extends Controller
         $user = JWTAuth::parseToken()->authenticate();
 
         if ($user->hasVerifiedEmail()) {
-            // return response()->json(['message' => 'Email already verified'], 200);
-        }
-
-        $verificationToken = Str::random(60);
-
-        EmailVerification::create([
-            'user_id' => $user->id,
-            'token' => $verificationToken
-        ]);
-
-        Mail::to($user->email)->send(new VerifyEmail($user, $verificationToken));
-        return response()->json(['message' => 'Verification email sent successfully'], 200);
-    }
-
-    public function verifyEmail($token)
-    {
-        $verification = EmailVerification::where('token', $token)->first();
-
-        if (!$verification) {
-            return response()->json(['error' => 'Invalid verification token'], 404);
-        }
-
-        $user = $verification->user;
-
-        if ($user->hasVerifiedEmail()) {
             return response()->json(['message' => 'Email already verified'], 200);
         }
 
+        $verificationCode = rand(100000, 999999);
+
+        EmailVerification::updateOrCreate(
+            ['user_id' => $user->id],
+            ['token' => $verificationCode]
+        );
+
+        Mail::to($user->email)->send(new VerifyEmail($user, $verificationCode));
+        return response()->json(['message' => 'Verification email sent successfully'], 200);
+    }
+
+
+    public function verifyEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'verification_code' => 'required|numeric',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $emailVerification = EmailVerification::where('user_id', $user->id)
+            ->where('token', $request->verification_code)
+            ->first();
+
+        if (!$emailVerification) {
+            return response()->json(['message' => 'Invalid verification code'], 400);
+        }
+
         $user->markEmailAsVerified();
-        event(new Verified($user));
 
         return response()->json(['message' => 'Email verified successfully'], 200);
     }
