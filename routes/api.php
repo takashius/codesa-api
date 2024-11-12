@@ -7,6 +7,7 @@ use App\Http\Controllers\api\CategoryController;
 use App\Http\Controllers\api\PostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CacheController;
 
 use App\Http\Middleware\AuthenticateJWT;
 
@@ -30,7 +31,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::middleware(AuthenticateJWT::class)->group(function () {
     Route::group(['prefix' => 'cards'], function () {
         Route::post('/recharge', [CardController::class, 'store']);
-        Route::post('/recharges', [CardController::class, 'getData']);
+        Route::get('/recharges', [CardController::class, 'getData']);
     });
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('posts', PostController::class);
@@ -54,3 +55,4 @@ Route::get('categories/{category}', [CategoryController::class, 'show']);
 Route::get('posts', [PostController::class, 'index']);
 Route::get('posts/{post}', [PostController::class, 'show']);
 Route::post('verify-email', [AuthController::class, 'verifyEmail']);
+Route::get('/cache/clear-all', [CacheController::class, 'clearAllCache']);
