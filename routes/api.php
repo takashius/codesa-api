@@ -8,6 +8,7 @@ use App\Http\Controllers\api\PostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CacheController;
+use Illuminate\Support\Facades\Mail;
 
 use App\Http\Middleware\AuthenticateJWT;
 
@@ -56,3 +57,11 @@ Route::get('posts', [PostController::class, 'index']);
 Route::get('posts/{post}', [PostController::class, 'show']);
 Route::post('verify-email', [AuthController::class, 'verifyEmail']);
 Route::get('/cache/clear-all', [CacheController::class, 'clearAllCache']);
+
+Route::get('/test-email', function () {
+    Mail::raw('Este es un correo de prueba enviado desde una ruta.', function ($message) {
+        $message->to('takashi.onimaru@gmail.com')
+            ->subject('Prueba de Correo desde Ruta');
+    });
+    return 'Correo enviado';
+});
