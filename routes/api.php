@@ -5,6 +5,7 @@ use App\Http\Controllers\api\CardController;
 use App\Http\Controllers\api\PersonaController;
 use App\Http\Controllers\api\CategoryController;
 use App\Http\Controllers\api\PostController;
+use App\Http\Controllers\api\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CacheController;
@@ -64,4 +65,15 @@ Route::get('/test-email', function () {
             ->subject('Prueba de Correo desde Ruta');
     });
     return 'Correo enviado';
+});
+
+Route::post('/process-payment', [PaymentController::class, 'processPayment']);
+Route::get('/success', function () {
+    return 'Pago Exitoso';
+});
+Route::get('/failure', function () {
+    return 'Pago Fallido';
+});
+Route::get('/pending', function () {
+    return 'Pago Pendiente';
 });
